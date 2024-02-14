@@ -1,5 +1,7 @@
 {
     "board": "MiniCore:avr:328",
     "port": "COM5",
-    "configuration": "bootloader=uart0,eeprom=keep,variant=modelNonP,BOD=2v7,LTO=Os_flto,clock=16MHz_external"
+    "sketch": "arduino-solar-charge-controller.ino",
+    "configuration": "bootloader=uart0,eeprom=keep,variant=modelPB,BOD=2v7,LTO=Os_flto,clock=16MHz_external",
+    "programmer": "usbtinyisp"
 }
