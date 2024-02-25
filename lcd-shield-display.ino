@@ -26,16 +26,16 @@ void setup() {
 }
 
 void loop() {
-  fadeEffect("Solar Manager", 0, 0); // Animăm primul rând
-  fadeEffect("   Controller   ", 0, 1); // Animăm al doilea rând
+  fadeEffect("Solar Manager", 0, 0); 
+  fadeEffect("   Controller   ", 0, 1);
 }
 
-// Funcție pentru efectul de "fade"
+
 void fadeEffect(String text, int x, int y) {
   for (int i = 0; i < text.length(); ++i) {
     lcd.setCursor(x + i, y);
     lcd.print("_");
-    delay(100); // Pauză pentru efectul de "fade"
+    delay(100); 
     lcd.setCursor(x + i, y);
     lcd.print(text.charAt(i));
   }
