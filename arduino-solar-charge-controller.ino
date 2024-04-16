@@ -11,7 +11,7 @@ const float voltageConversionFactor = 5.0 / 1023.0;
 void setup() {
   lcd.begin(16, 2);
   Serial.begin(115200);
-  displayTitle("Made by", "Paula");
+  displayTitle("Made by", "ARobertM");
   delay(2000);
   displayTitle("Solar Power", "Manager");
   delay(2000);
