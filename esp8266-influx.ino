@@ -11,18 +11,15 @@ ESP8266WiFiMulti wifiMulti;
 #include <InfluxDbClient.h>
 #include <InfluxDbCloud.h>
 
-#define WIFI_SSID 
-#define WIFI_PASSWORD 
-#define INFLUXDB_URL 
-#define INFLUXDB_TOKEN 
-#define INFLUXDB_ORG 
-#define INFLUXDB_BUCKET 
-
+#define WIFI_SSID ""
+#define WIFI_PASSWORD ""
+#define INFLUXDB_URL ""
+#define INFLUXDB_TOKEN ""
+#define INFLUXDB_ORG ""
+#define INFLUXDB_BUCKET ""
 #define TZ_INFO "EET-2EEST,M3.5.0/3,M10.5.0/4"
 
 InfluxDBClient client(INFLUXDB_URL, INFLUXDB_ORG, INFLUXDB_BUCKET, INFLUXDB_TOKEN, InfluxDbCloud2CACert);
-
-// Data point
 Point sensor("energy_data");
 
 void setup() {
@@ -32,14 +29,12 @@ void setup() {
   WiFi.mode(WIFI_STA);
   wifiMulti.addAP(WIFI_SSID, WIFI_PASSWORD);
 
-  Serial.print("Connecting to WiFi");
   while (wifiMulti.run() != WL_CONNECTED) {
     Serial.print(".");
-    delay(1000);  // Increase delay for less spammy output
+    delay(1000);
   }
   Serial.println("\nWiFi Connected!");
-  Serial.print("Connected to SSID: ");
-  Serial.println(WiFi.SSID());
+  Serial.println("Connected to SSID: " + WiFi.SSID());
 
   timeSync(TZ_INFO, "pool.ntp.org", "time.nis.gov");
 
@@ -52,29 +47,24 @@ void setup() {
   }
 }
 
-
 void loop() {
-  sensor.clearFields();
+  if (Serial.available()) {
+    String data = Serial.readStringUntil('\n');
+    float batteryVoltage = data.substring(0, data.indexOf(',')).toFloat();
+    data = data.substring(data.indexOf(',') + 1);
+    float batteryPercentage = data.substring(0, data.indexOf(',')).toFloat();
+    float solarPanelVoltage = data.substring(data.indexOf(',') + 1).toFloat();
 
-  // Generate random data for solar panel voltage and battery voltage
-  float solarPanelVoltage = random(120, 140) / 10.0; // Simulating 12.0V to 14.0V
-  float batteryVoltage = random(110, 130) / 10.0; // Simulating 11.0V to 13.0V
+    sensor.clearFields();
+    sensor.addField("solarPanelVoltage", solarPanelVoltage);
+    sensor.addField("batteryVoltage", batteryVoltage);
+    sensor.addField("batteryPercentage", batteryPercentage);
 
-  sensor.addField("solarPanelVoltage", solarPanelVoltage);
-  sensor.addField("batteryVoltage", batteryVoltage);
-
-  Serial.print("Writing: ");
-  Serial.println(sensor.toLineProtocol());
-
-  if (WiFi.RSSI() == 0 && wifiMulti.run() != WL_CONNECTED) {
-    Serial.println("Wifi connection lost. Reconnecting...");
+    if (!client.writePoint(sensor)) {
+      Serial.print("InfluxDB write failed: ");
+      Serial.println(client.getLastErrorMessage());
+    }
+    Serial.println("Data sent to InfluxDB");
   }
-
-  if (!client.writePoint(sensor)) {
-    Serial.print("InfluxDB write failed: ");
-    Serial.println(client.getLastErrorMessage());
-  }
-
-  Serial.println("Wait 10s");
-  delay(10000);
+  delay(10000); // Delay pentru reducerea traficului de date
 }
