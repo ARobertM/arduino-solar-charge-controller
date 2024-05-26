@@ -5,7 +5,8 @@
 
 LiquidCrystal lcd(8, 9, 4, 5, 6, 7);
 
-const float batteryVoltageMax = 3.7; 
+const float batteryVoltageMax = 4.2;
+const float batteryVoltageMin = 3.0; 
 const float voltageConversionFactor = 5.0 / 1023.0; 
 
 void setup() {
@@ -19,19 +20,18 @@ void setup() {
 
 void loop() {
   float batteryAnalogReading = analogRead(batteryPin);
-  float batteryVoltage = batteryAnalogReading * voltageConversionFactor * (batteryVoltageMax / 3.7); 
+  float batteryVoltage = batteryAnalogReading * voltageConversionFactor; 
   float solarPanelAnalogReading = analogRead(solarPanelPin);
   float solarPanelVoltage = solarPanelAnalogReading * voltageConversionFactor;
-  float batteryPercentage = (batteryVoltage / batteryVoltageMax) * 100;
+  float batteryPercentage = ((batteryVoltage - batteryVoltageMin) / (batteryVoltageMax - batteryVoltageMin)) * 100;
 
-  // Trimitere date către ESP via Serial
+ 
   Serial.print(batteryVoltage, 2);
   Serial.print(",");
   Serial.print(batteryPercentage, 1);
   Serial.print(",");
   Serial.println(solarPanelVoltage, 2);
 
-  // Afișare valori pe LCD
   lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("Bat:");
@@ -44,7 +44,7 @@ void loop() {
   lcd.print(solarPanelVoltage, 2);
   lcd.print("V");
 
-  delay(10000); // Delay între citiri
+  delay(10000);
 }
 
 void displayTitle(String line1, String line2) {
